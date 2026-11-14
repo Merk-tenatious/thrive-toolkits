@@ -1,0 +1,35 @@
+name: Decode PNG icons
+on:
+  push:
+    paths:
+      - "icons/*.png.b64"
+      - ".github/workflows/decode-icons.yml"
+permissions:
+  contents: write
+jobs:
+  decode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode PNG icons and remove staging files
+        run: |
+          python3 - << 'PY'
+          import base64, pathlib
+          root = pathlib.Path("icons")
+          for p in sorted(root.glob("*.png.b64")):
+              out = root / p.name[:-4]
+              data = base64.b64decode(p.read_text().strip())
+              if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+                  raise SystemExit(f"not a PNG after decode: {p}")
+              out.write_bytes(data)
+              p.unlink()
+              print(f"wrote {out} ({len(data)} bytes)")
+          PY
+      - name: Commit decoded PNG icons
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A icons
+          if git diff --cached --quiet; then echo "no icon changes"; exit 0; fi
+          git commit -m "Add decoded PNG icons"
+          git push
