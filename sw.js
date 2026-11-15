@@ -1,5 +1,5 @@
 /* Offline cache for the toolkit site. Caches only this site's own files. Account data (Supabase) is never cached here. */
-var CACHE = "toolkits-9ee383532646";
+var CACHE = "toolkits-7a4e74e909d5";
 var FILES = ["./", "./index.html", "./styles.css", "./platform.css", "./config.js", "./products.js", "./platform.js", "./vendor/supabase.js",
   "./dashboards/discipline/app.js", "./dashboards/discipline/logic.js", "./dashboards/discipline/maya.js",
   "./privacy.html", "./terms.html", "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-512-maskable.png"];

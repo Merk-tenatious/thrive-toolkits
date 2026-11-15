@@ -148,7 +148,7 @@
     var code = (err && (err.code || err.error_code)) || "", msg = (err && err.message) || "";
     if (isNetErr(err)) return "You're offline. Connect to the internet and try again.";
     if (code === "invalid_credentials" || /invalid login/i.test(msg)) return "That email and password don't match. Try again, or reset your password.";
-    if (code === "email_not_confirmed" || /not confirmed/i.test(msg)) return "Please confirm your email first. Open the link we sent to your inbox.";
+    if (code === "email_not_confirmed" || /not confirmed/i.test(msg)) return "Please confirm your email first. Open the link we sent to your inbox. Don't see it? Check your spam or junk folder. If it's there, mark it as not spam.";
     if (code === "weak_password" || /password should/i.test(msg)) return "Please use a password with at least 8 characters.";
     if (code === "over_email_send_rate_limit" || code === "over_request_rate_limit" || /rate limit/i.test(msg)) return "Too many tries in a short time. Please wait a few minutes and try again.";
     if (/email address.*invalid|validate email/i.test(msg)) return "Please check the email address.";
@@ -186,7 +186,18 @@
   function addResend(f, email) {
     if (f.querySelector("[data-resend]")) return;
     var b = document.createElement("button"); b.type = "button"; b.className = "btn small light"; b.setAttribute("data-resend", "1"); b.textContent = "Send the confirmation link again";
-    b.addEventListener("click", async function () { b.disabled = true; await sb.auth.resend({ type: "signup", email: email, options: { emailRedirectTo: REDIRECT } }).catch(function () {}); b.textContent = "Sent. Check your inbox."; });
+    b.addEventListener("click", async function () {
+      b.disabled = true;
+      await sb.auth.resend({ type: "signup", email: email, options: { emailRedirectTo: REDIRECT } }).catch(function () {});
+      b.textContent = "Sent. Check your inbox.";
+      if (!f.querySelector("[data-resend-hint]")) {
+        var h = document.createElement("p");
+        h.className = "hint";
+        h.setAttribute("data-resend-hint", "1");
+        h.textContent = "Don't see it? Check your spam or junk folder. If it's there, mark it as not spam.";
+        b.after(h);
+      }
+    });
     f.querySelector(".err").after(b);
   }
 
@@ -218,7 +229,7 @@
   function vCheckEmail(email) {
     showPlatform(header("Check your email") + '<div class="pwrap"><section class="card"><h2>One more step</h2>' +
       "<p>We sent a link to <b>" + esc(email) + "</b>. Open it on this device to confirm your account. You'll come back here signed in, ready to enter your license key.</p>" +
-      '<p class="hint">Nothing there after a few minutes? Check your spam or promotions folder.</p><div class="links"><a href="#/signin">Back to sign in</a></div></section></div>' + footLinks(false));
+      '<p class="hint">Don\'t see it? Check your spam or junk folder. If it\'s there, mark it as not spam.</p><div class="links"><a href="#/signin">Back to sign in</a></div></section></div>' + footLinks(false));
   }
 
   function vForgot() {
@@ -234,7 +245,7 @@
       var r; try { r = await sb.auth.resetPasswordForEmail(email, { redirectTo: REDIRECT }); } catch (x) { r = { error: x }; }
       busy(f, false);
       if (r.error && (isNetErr(r.error) || /rate limit/i.test(r.error.message || ""))) return formErr(f, authMessage(r.error));
-      flash = { kind: "ok", text: "If an account uses that email, a reset link is on its way. Open it on this device." }; go("#/signin");
+      flash = { kind: "ok", text: "If an account uses that email, a reset link is on its way. Open it on this device. Don't see it? Check your spam or junk folder. If it's there, mark it as not spam." }; go("#/signin");
     });
   }
 
